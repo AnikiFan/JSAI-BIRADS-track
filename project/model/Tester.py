@@ -102,6 +102,10 @@ class Tester:
         info("masked")
         masked = make_masked(heatmap,cropped)
 
+        origin = self.cla_full.predictor.preprocess([origin])
+        box = self.cla_full.predictor.preprocess([box])
+        masked = self.cla_full.predictor.preprocess([masked])
+
         info("boundary_full")
         boundary_full = self.boundary_full(origin,verbose=False)[0].probs.data
         info("boundary_box")
