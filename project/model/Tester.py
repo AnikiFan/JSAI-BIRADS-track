@@ -1,11 +1,9 @@
-import pandas as pd
 from .segmentation.segmentation_model import FCBFormer
 from torchvision import transforms
 import torch.nn.functional as F
 import cv2
 from .utils import removeFrame,make_mask,make_box_map,make_masked
 import torch
-import numpy as np
 import os
 from ultralytics import YOLO
 from logging import info
@@ -26,6 +24,7 @@ class Tester:
 
         # 实例化cla所需模型
         self.cla_full = YOLO(os.path.join(model_folder_path,'cla','full.pt'))
+        self.cla_full()
         self.cla_0_1 = YOLO(os.path.join(model_folder_path,'cla','full_2_3_t.pt'))
         self.cla_01_2345 = YOLO(os.path.join(model_folder_path,'cla','full_23_4A4B4C5_t.pt'))
         self.cla_2_345 = YOLO(os.path.join(model_folder_path,'cla','full_4A_4B4C5_t.pt'))
@@ -57,6 +56,7 @@ class Tester:
         info("cla_predict开始")
         info("cla读取图像")
         origin = cv2.imread(image)
+        origin = self.cla_full.predictor.preprocess([origin])
         info("cla_full")
         cla_full = self.cla_full(origin,verbose=False)[0].probs.data
         info("cla_01_2345")

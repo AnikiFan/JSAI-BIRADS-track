@@ -1,43 +1,44 @@
 Timer unit: 1e-07 s
 
-Total time: 88.5504 s
+Total time: 61.7561 s
 File: D:\15800\Workspace\batched_testB\project\model\Tester.py
-Function: cla_predict at line 54
+Function: cla_predict at line 53
 
 Line #      Hits         Time  Per Hit   % Time  Line Contents
 ==============================================================
-    54                                               @torch.no_grad()
-    55                                               @profile
-    56                                               def cla_predict(self,image):
-    57       671      58160.0     86.7      0.0          info("cla_predict开始")
-    58       671      35859.0     53.4      0.0          info("cla读取图像")
-    59       671   65376717.0  97431.8      7.4          origin = cv2.imread(image)
-    60       671     118979.0    177.3      0.0          info("cla_full")
-    61       671  138361949.0 206202.6     15.6          cla_full = self.cla_full(origin,verbose=False)[0].probs.data
-    62       671      66974.0     99.8      0.0          info("cla_01_2345")
-    63       671  134848237.0 200966.1     15.2          cla_01_2345__01,cla_01_2345__2345 = self.cla_01_2345(origin,verbose=False)[0].probs.data
-    64       671      70759.0    105.5      0.0          info("cla_0_1")
-    65       671  135457098.0 201873.5     15.3          cla_0_1__0,cla_0_1__1 = self.cla_0_1(origin,verbose=False)[0].probs.data
-    66       671      70540.0    105.1      0.0          info("cla_2_345")
-    67       671  134496449.0 200441.8     15.2          cla_2_345__2,cla_2_345__345 = self.cla_2_345(origin,verbose=False)[0].probs.data
-    68       671      70248.0    104.7      0.0          info("cla_3_45")
-    69       671  133806639.0 199413.8     15.1          cla_3_45__3,cla_3_45__45 = self.cla_3_45(origin,verbose=False)[0].probs.data
-    70       671      70295.0    104.8      0.0          info("cla_4_5")
-    71       671  135611252.0 202103.2     15.3          cla_4_5__4,cla_4_5__5 = self.cla_4_5(origin,verbose=False)[0].probs.data
-    72       671      71142.0    106.0      0.0          info("bayes")
-    73      2013    2279864.0   1132.6      0.3          prob_result = torch.Tensor([
-    74       671     261954.0    390.4      0.0          cla_01_2345__01 * cla_0_1__0,
-    75       671     157921.0    235.4      0.0          cla_01_2345__01 * cla_0_1__1,
-    76       671     138402.0    206.3      0.0          cla_01_2345__2345 * cla_2_345__2,
-    77       671     288406.0    429.8      0.0          cla_01_2345__2345 * cla_2_345__345 * cla_3_45__3,
-    78       671     399549.0    595.5      0.0          cla_01_2345__2345 * cla_2_345__345 * cla_3_45__45 * cla_4_5__4,
-    79       671     402063.0    599.2      0.0          cla_01_2345__2345 * cla_2_345__345 * cla_3_45__45 * cla_4_5__5,
-    80       671     931347.0   1388.0      0.1          ]).to('cuda')
-    81       671      69936.0    104.2      0.0          info("ensemble cla")
-    82       671    1968384.0   2933.5      0.2          result = Tester.majority_ensemble([cla_full,prob_result])
-    83       671      15198.0     22.6      0.0          return result
+    53                                               @torch.no_grad()
+    54                                               @profile
+    55                                               def cla_predict(self,image):
+    56       671      56320.0     83.9      0.0          info("cla_predict开始")
+    57       671      34801.0     51.9      0.0          info("cla读取图像")
+    58       671   71755693.0 106938.4     11.6          origin = cv2.imread(image)
+    59       671   57019222.0  84976.5      9.2          origin = self.cla_full.predictor.preprocess([origin])
+    60       671     104304.0    155.4      0.0          info("cla_full")
+    61       671   83486656.0 124421.2     13.5          cla_full = self.cla_full(origin,verbose=False)[0].probs.data
+    62       671      69612.0    103.7      0.0          info("cla_01_2345")
+    63       671   81010369.0 120730.8     13.1          cla_01_2345__01,cla_01_2345__2345 = self.cla_01_2345(origin,verbose=False)[0].probs.data
+    64       671      66298.0     98.8      0.0          info("cla_0_1")
+    65       671   79947150.0 119146.3     12.9          cla_0_1__0,cla_0_1__1 = self.cla_0_1(origin,verbose=False)[0].probs.data
+    66       671      66148.0     98.6      0.0          info("cla_2_345")
+    67       671   79540263.0 118539.9     12.9          cla_2_345__2,cla_2_345__345 = self.cla_2_345(origin,verbose=False)[0].probs.data
+    68       671      65975.0     98.3      0.0          info("cla_3_45")
+    69       671   79646988.0 118698.9     12.9          cla_3_45__3,cla_3_45__45 = self.cla_3_45(origin,verbose=False)[0].probs.data
+    70       671      64198.0     95.7      0.0          info("cla_4_5")
+    71       671   78919964.0 117615.4     12.8          cla_4_5__4,cla_4_5__5 = self.cla_4_5(origin,verbose=False)[0].probs.data
+    72       671      63955.0     95.3      0.0          info("bayes")
+    73      2013    1774768.0    881.7      0.3          prob_result = torch.Tensor([
+    74       671     249833.0    372.3      0.0          cla_01_2345__01 * cla_0_1__0,
+    75       671     158631.0    236.4      0.0          cla_01_2345__01 * cla_0_1__1,
+    76       671     150951.0    225.0      0.0          cla_01_2345__2345 * cla_2_345__2,
+    77       671     313119.0    466.6      0.1          cla_01_2345__2345 * cla_2_345__345 * cla_3_45__3,
+    78       671     453857.0    676.4      0.1          cla_01_2345__2345 * cla_2_345__345 * cla_3_45__45 * cla_4_5__4,
+    79       671     450468.0    671.3      0.1          cla_01_2345__2345 * cla_2_345__345 * cla_3_45__45 * cla_4_5__5,
+    80       671     354938.0    529.0      0.1          ]).to('cuda')
+    81       671      67026.0     99.9      0.0          info("ensemble cla")
+    82       671    1653037.0   2463.5      0.3          result = Tester.majority_ensemble([cla_full,prob_result])
+    83       671      15972.0     23.8      0.0          return result
 
-Total time: 357.737 s
+Total time: 365.584 s
 File: D:\15800\Workspace\batched_testB\project\model\Tester.py
 Function: fea_predict at line 86
 
@@ -46,53 +47,53 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
     86                                               @torch.no_grad()
     87                                               @profile
     88                                               def fea_predict(self, image):
-    89       983      92193.0     93.8      0.0          info("fea_predict开始")
-    90       983      54006.0     54.9      0.0          info("fea读取图像")
-    91       983   78842607.0  80206.1      2.2          origin = cv2.imread(image)
-    92       983     148577.0    151.1      0.0          info("removeFrame")
-    93       983  210006704.0 213638.6      5.9          top,left,h,w = removeFrame(origin.transpose((2,0,1)))
-    94       983      47189.0     48.0      0.0          cropped = origin[top:top+h,left:left+w]
-    95       983  898220667.0 913754.5     25.1          heatmap = self.seg_model(self.transform(cropped).unsqueeze(0).to('cuda')).sigmoid() # 生成热图
-    96       983     118919.0    121.0      0.0          info("heatmap插值")
-    97       983  157414301.0 160136.6      4.4          heatmap = F.interpolate(heatmap,size=(h,w),mode='bilinear',align_corners=False).cpu()
-    98       983     139515.0    141.9      0.0          info("mask")
-    99       983   72261206.0  73510.9      2.0          mask = make_mask(heatmap)
-   100       983     144990.0    147.5      0.0          info("box")
-   101       983   25274845.0  25711.9      0.7          box = make_box_map(cropped,cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY))
-   102       983      94129.0     95.8      0.0          info("masked")
-   103       983   93454132.0  95070.3      2.6          masked = make_masked(heatmap,cropped)
+    89       983      97605.0     99.3      0.0          info("fea_predict开始")
+    90       983      54303.0     55.2      0.0          info("fea读取图像")
+    91       983   80340405.0  81729.8      2.2          origin = cv2.imread(image)
+    92       983     162513.0    165.3      0.0          info("removeFrame")
+    93       983  216995530.0 220748.3      5.9          top,left,h,w = removeFrame(origin.transpose((2,0,1)))
+    94       983      47860.0     48.7      0.0          cropped = origin[top:top+h,left:left+w]
+    95       983  912010836.0 927783.1     24.9          heatmap = self.seg_model(self.transform(cropped).unsqueeze(0).to('cuda')).sigmoid() # 生成热图
+    96       983     121366.0    123.5      0.0          info("heatmap插值")
+    97       983  172733291.0 175720.5      4.7          heatmap = F.interpolate(heatmap,size=(h,w),mode='bilinear',align_corners=False).cpu()
+    98       983     150104.0    152.7      0.0          info("mask")
+    99       983   73887727.0  75165.5      2.0          mask = make_mask(heatmap)
+   100       983     153289.0    155.9      0.0          info("box")
+   101       983   25654924.0  26098.6      0.7          box = make_box_map(cropped,cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY))
+   102       983      97122.0     98.8      0.0          info("masked")
+   103       983   95085919.0  96730.3      2.6          masked = make_masked(heatmap,cropped)
    104                                           
-   105       983     144237.0    146.7      0.0          info("boundary_full")
-   106       983  251364390.0 255711.5      7.0          boundary_full = self.boundary_full(origin,verbose=False)[0].probs.data
-   107       983      98189.0     99.9      0.0          info("boundary_box")
-   108       983  211570841.0 215229.7      5.9          boundary_box = self.boundary_box(box,verbose=False)[0].probs.data
-   109       983      99196.0    100.9      0.0          info("ensemble boundary")
-   110       983    2276038.0   2315.4      0.1          boundary = Tester.max_ensemble([boundary_full,boundary_box])
+   105       983     148828.0    151.4      0.0          info("boundary_full")
+   106       983  254407336.0 258807.1      7.0          boundary_full = self.boundary_full(origin,verbose=False)[0].probs.data
+   107       983     111363.0    113.3      0.0          info("boundary_box")
+   108       983  216737864.0 220486.1      5.9          boundary_box = self.boundary_box(box,verbose=False)[0].probs.data
+   109       983     110122.0    112.0      0.0          info("ensemble boundary")
+   110       983    2616679.0   2661.9      0.1          boundary = Tester.max_ensemble([boundary_full,boundary_box])
    111                                           
-   112       983      89987.0     91.5      0.0          info("calcification_full")
-   113       983  250896594.0 255235.6      7.0          calcification_full = self.calcification_full(origin,verbose=False)[0].probs.data
-   114       983     100052.0    101.8      0.0          info("calcification_box")
-   115       983  211283696.0 214937.6      5.9          calcification_box = self.calcification_box(box,verbose=False)[0].probs.data
-   116       983      99379.0    101.1      0.0          info("calcification_masked")
-   117       983  234194541.0 238244.7      6.5          calcification_masked = self.calcification_masked(masked,verbose=False)[0].probs.data
-   118       983      98900.0    100.6      0.0          info("ensemble calcification")
-   119       983    2723561.0   2770.7      0.1          calcification = Tester.majority_ensemble([calcification_full,calcification_box,calcification_masked])
+   112       983      95341.0     97.0      0.0          info("calcification_full")
+   113       983  254702515.0 259107.3      7.0          calcification_full = self.calcification_full(origin,verbose=False)[0].probs.data
+   114       983     109803.0    111.7      0.0          info("calcification_box")
+   115       983  217212106.0 220968.6      5.9          calcification_box = self.calcification_box(box,verbose=False)[0].probs.data
+   116       983     111822.0    113.8      0.0          info("calcification_masked")
+   117       983  239511669.0 243653.8      6.6          calcification_masked = self.calcification_masked(masked,verbose=False)[0].probs.data
+   118       983     112350.0    114.3      0.0          info("ensemble calcification")
+   119       983    3045010.0   3097.7      0.1          calcification = Tester.majority_ensemble([calcification_full,calcification_box,calcification_masked])
    120                                           
-   121       983      90374.0     91.9      0.0          info("direction_full")
-   122       983  183318777.0 186489.1      5.1          direction = self.direction_full(origin,verbose=False)[0].probs.top1
+   121       983      97801.0     99.5      0.0          info("direction_full")
+   122       983  186114677.0 189333.3      5.1          direction = self.direction_full(origin,verbose=False)[0].probs.top1
    123                                           
-   124       983     111994.0    113.9      0.0          info("shape_full")
-   125       983  245424889.0 249669.3      6.9          shape_full = self.shape_full(origin,verbose=False)[0].probs.data
-   126       983      99673.0    101.4      0.0          info("shape_box")
-   127       983  210485613.0 214125.8      5.9          shape_box = self.shape_box(box,verbose=False)[0].probs.data
-   128       983      98503.0    100.2      0.0          info("shape_masked")
-   129       983  233768271.0 237811.1      6.5          shape_masked = self.shape_masked(masked,verbose=False)[0].probs.data
+   124       983     123546.0    125.7      0.0          info("shape_full")
+   125       983  249130329.0 253438.8      6.8          shape_full = self.shape_full(origin,verbose=False)[0].probs.data
+   126       983     120692.0    122.8      0.0          info("shape_box")
+   127       983  213087123.0 216772.3      5.8          shape_box = self.shape_box(box,verbose=False)[0].probs.data
+   128       983     110890.0    112.8      0.0          info("shape_masked")
+   129       983  237151282.0 241252.6      6.5          shape_masked = self.shape_masked(masked,verbose=False)[0].probs.data
    130                                           
    131                                           
-   132       983      98916.0    100.6      0.0          info("ensemble shape")
-   133       983    2484929.0   2527.9      0.1          shape = Tester.average_ensemble([shape_full,shape_box,shape_masked])
+   132       983     110192.0    112.1      0.0          info("ensemble shape")
+   133       983    3129982.0   3184.1      0.1          shape = Tester.average_ensemble([shape_full,shape_box,shape_masked])
    134                                                   
-   135       983      33587.0     34.2      0.0          return boundary,calcification,direction,shape
+   135       983      33402.0     34.0      0.0          return boundary,calcification,direction,shape
 
- 88.55 seconds - D:\15800\Workspace\batched_testB\project\model\Tester.py:54 - cla_predict
-357.74 seconds - D:\15800\Workspace\batched_testB\project\model\Tester.py:86 - fea_predict
+ 61.76 seconds - D:\15800\Workspace\batched_testB\project\model\Tester.py:53 - cla_predict
+365.58 seconds - D:\15800\Workspace\batched_testB\project\model\Tester.py:86 - fea_predict
