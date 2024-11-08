@@ -29,7 +29,7 @@ if __name__ == '__main__':
     fea_pre = pd.DataFrame({"id":range(1,len(fea_files)+1)})
 
     # 实例化用于测试的类
-    tester = Tester(model_folder_path)
+    tester = Tester(model_folder_path,format='engine')
 
     # 对cla数据集进行推理
     cla_pre['label'] = cla_files.img.progress_apply(tester.cla_predict)

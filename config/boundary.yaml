@@ -1,0 +1,5 @@
+train: ./boundary/train
+val: ./boundary/test
+test: ./boundary/test
+
+nc: 2
