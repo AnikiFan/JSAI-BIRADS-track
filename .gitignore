@@ -11,3 +11,13 @@ __pycache__/
 *.lprof
 *.txt
 *.pyc
+*.partial
+*.npy
+*.log
+*.cache
+*.info
+*.param
+*.bin
+*.torchscript
+runs/
+*_paddle_model/

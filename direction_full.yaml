@@ -1,0 +1,6 @@
+path: ../../testB/project/datasets
+train: direction_full/train
+val: direction_full/test
+test: direction_full/test
+
+nc: 2
