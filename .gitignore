@@ -10,3 +10,6 @@
 __pycache__/
 *.lprof
 *.txt
+*.cache
+*.pyc
+*.torchscript
