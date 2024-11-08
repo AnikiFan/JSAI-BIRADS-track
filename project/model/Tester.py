@@ -9,7 +9,7 @@ from ultralytics import YOLO
 from logging import info
 from line_profiler import profile
 class Tester:
-    def __init__(self,model_folder_path):
+    def __init__(self,model_folder_path,format='pt'):
         info("init test")
         self.seg_model = FCBFormer().to('cuda') # 实例化FCB模型
         self.seg_model.load_state_dict(torch.load(os.path.join(model_folder_path,'segmentation','FCB_checkpoint.pt'))) # 加载预训练模型
@@ -23,30 +23,30 @@ class Tester:
 
 
         # 实例化cla所需模型
-        self.cla_full = YOLO(os.path.join(model_folder_path,'cla','full.pt'))
+        self.cla_full = YOLO(os.path.join(model_folder_path,'cla','full.'+format))
         self.cla_full()
-        self.cla_0_1 = YOLO(os.path.join(model_folder_path,'cla','full_2_3_t.pt'))
-        self.cla_01_2345 = YOLO(os.path.join(model_folder_path,'cla','full_23_4A4B4C5_t.pt'))
-        self.cla_2_345 = YOLO(os.path.join(model_folder_path,'cla','full_4A_4B4C5_t.pt'))
-        self.cla_3_45 = YOLO(os.path.join(model_folder_path,'cla','full_4B_4C5_t.pt'))
-        self.cla_4_5 = YOLO(os.path.join(model_folder_path,'cla','full_4C_5_t.pt'))
+        self.cla_0_1 = YOLO(os.path.join(model_folder_path,'cla','full_2_3_t.'+format))
+        self.cla_01_2345 = YOLO(os.path.join(model_folder_path,'cla','full_23_4A4B4C5_t.'+format))
+        self.cla_2_345 = YOLO(os.path.join(model_folder_path,'cla','full_4A_4B4C5_t.'+format))
+        self.cla_3_45 = YOLO(os.path.join(model_folder_path,'cla','full_4B_4C5_t.'+format))
+        self.cla_4_5 = YOLO(os.path.join(model_folder_path,'cla','full_4C_5_t.'+format))
 
         # 实例化boudary特征所需模型
-        self.boundary_full = YOLO(os.path.join(model_folder_path,'boundary','full.pt'),task="classify")
-        self.boundary_box = YOLO(os.path.join(model_folder_path,'boundary','box.pt'),task="classify")
+        self.boundary_full = YOLO(os.path.join(model_folder_path,'boundary','full.'+format),task="classify")
+        self.boundary_box = YOLO(os.path.join(model_folder_path,'boundary','box.'+format),task="classify")
 
         # 实例化calcification特征所需模型
-        self.calcification_full = YOLO(os.path.join(model_folder_path,'calcification','full.pt'),task="classify")
-        self.calcification_box = YOLO(os.path.join(model_folder_path,'calcification','box.pt'),task="classify")
-        self.calcification_masked = YOLO(os.path.join(model_folder_path,'calcification','masked.pt'),task="classify")
+        self.calcification_full = YOLO(os.path.join(model_folder_path,'calcification','full.'+format),task="classify")
+        self.calcification_box = YOLO(os.path.join(model_folder_path,'calcification','box.'+format),task="classify")
+        self.calcification_masked = YOLO(os.path.join(model_folder_path,'calcification','masked.'+format),task="classify")
 
         # 实例化direction特征所需模型
-        self.direction_full = YOLO(os.path.join(model_folder_path,'direction','full.pt'),task="classify")
+        self.direction_full = YOLO(os.path.join(model_folder_path,'direction','full.'+format),task="classify")
 
         # 实例化shape特征所需模型
-        self.shape_full = YOLO(os.path.join(model_folder_path,'shape','full.pt'),task="classify")
-        self.shape_box = YOLO(os.path.join(model_folder_path,'shape','box.pt'),task="classify")
-        self.shape_masked = YOLO(os.path.join(model_folder_path,'shape','masked.pt'),task="classify")
+        self.shape_full = YOLO(os.path.join(model_folder_path,'shape','full.'+format),task="classify")
+        self.shape_box = YOLO(os.path.join(model_folder_path,'shape','box.'+format),task="classify")
+        self.shape_masked = YOLO(os.path.join(model_folder_path,'shape','masked.'+format),task="classify")
         info("finish init")
 
 

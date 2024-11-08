@@ -7,7 +7,7 @@
 *.engine
 *.ipynb
 .ipynb_checkpoints/
-__pycache__/
+*__pycache__/
 *.lprof
 *.txt
 *.pyc
@@ -21,3 +21,15 @@ __pycache__/
 *.torchscript
 runs/
 *_paddle_model/
+*.tar
+*.log
+*.npy
+*.pb
+*.tflite
+*.bin
+*.param
+*.torchscript
+*_saved_model/
+*_ncnn_model/
+*.cache
+*.DS_Store
