@@ -5,7 +5,7 @@ from glob import glob
 import logging
 from tqdm import tqdm
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
     tqdm.pandas()
 
     # 定义路径
