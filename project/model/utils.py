@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import torch
 from typing import *
+from torchvision import transforms
 def make_mask(heatmap):
     mask = heatmap.squeeze()
     mask = (mask < 0.95) * mask
@@ -173,3 +174,15 @@ def removeFrame(x: torch.Tensor) -> Tuple[int, int, int, int]:
         top, bottom = 0, h - 1
 
     return top,left,bottom-top,right-left
+
+class Preprocess:
+    def __init__(self,half=True):
+        self.transform = transforms.Compose([
+            transforms.Resize(224),
+            transforms.CenterCrop((224,224)),
+            transforms.Normalize((0,0,0),(1,1,1)),
+        ])
+        self.half = half
+    def __call__(self,img):
+        img = self.transform(img[[2,1,0],...]/255).unsqueeze(0)
+        return img.half() if self.half else img

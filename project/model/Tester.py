@@ -2,7 +2,7 @@ from .segmentation.segmentation_model import FCBFormer
 from torchvision import transforms
 import torch.nn.functional as F
 import cv2
-from .utils import removeFrame,make_mask,make_box_map,make_masked
+from .utils import removeFrame,make_mask,make_box_map,make_masked,Preprocess
 import torch
 import os
 import numpy as np
@@ -14,16 +14,16 @@ TASK = "classify"
 YOLO_PARAMS = {"imgsz":224,"half":True,"int8":False,"device":"cuda:0","verbose":False}
 class Tester:
     @profile
-    def __init__(self,model_folder_path,format='pt'):
+    def __init__(self,model_folder_path,format='pt',half=True):
         info("init test")
-        self.seg_model = FCBFormer().to('cuda') # 实例化FCB模型
-        self.seg_model.load_state_dict(torch.load(os.path.join(model_folder_path,'segmentation','FCB_checkpoint.pt'))) # 加载预训练模型
+        self.seg_model = torch.jit.load(os.path.join(model_folder_path,'segmentation','FCB_half.torchscript')).to("cuda")
         # 自定义图像转换
         self.transform = transforms.Compose([
             transforms.Resize((352,352),antialias=True),
             transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))
         ])
         self.seg_model.eval()
+        self.preprocess = Preprocess(half)
 
 
         # 实例化cla所需模型
@@ -92,8 +92,7 @@ class Tester:
     def fea_predict(self, image):
         info("fea_predict开始")
         info("fea读取图像")
-        origin = cv2.imread(image)
-        origin = torch.Tensor(origin).to("cuda").permute(2,0,1)
+        origin = torch.tensor(cv2.imread(image),device='cuda').permute(2,0,1)
         debug("init origin")
         debug(origin.shape)
         debug(origin.device)
@@ -106,7 +105,7 @@ class Tester:
         debug("init cropped")
         debug(cropped.shape)
         debug(cropped.device)
-        heatmap = self.seg_model(self.transform(cropped/255).unsqueeze(0)).sigmoid() # 生成热图
+        heatmap = self.seg_model(self.transform(cropped/255).half().unsqueeze(0)).sigmoid() # 生成热图
         debug("init heatmap")
         debug(heatmap.shape)
         debug(heatmap.device)
@@ -130,9 +129,12 @@ class Tester:
         debug("init masked")
         debug(masked.shape)
         debug(masked.device)
-        origin = self.cla_full.predictor.preprocess([origin.permute(1,2,0).cpu().numpy().astype(np.uint8)])
-        box = self.cla_full.predictor.preprocess([box.permute(1,2,0).cpu().numpy().astype(np.uint8)])
-        masked = self.cla_full.predictor.preprocess([masked.permute(1,2,0).cpu().numpy().astype(np.uint8)])
+        origin = self.preprocess(origin)
+        box = self.preprocess(box)
+        masked = self.preprocess(masked)
+        # origin = self.cla_full.predictor.preprocess([origin.permute(1,2,0).cpu().numpy().astype(np.uint8)])
+        # box = self.cla_full.predictor.preprocess([box.permute(1,2,0).cpu().numpy().astype(np.uint8)])
+        # masked = self.cla_full.predictor.preprocess([masked.permute(1,2,0).cpu().numpy().astype(np.uint8)])
 
         info("boundary_full")
         boundary_full = self.boundary_full(origin,**YOLO_PARAMS)[0].probs.data
