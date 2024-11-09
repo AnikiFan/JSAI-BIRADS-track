@@ -106,8 +106,7 @@ class Tester:
         debug("init cropped")
         debug(cropped.shape)
         debug(cropped.device)
-        heatmap = self.seg_model(self.transform(cropped).unsqueeze(0)).sigmoid() # 生成热图
-        debug(heatmap.max())
+        heatmap = self.seg_model(self.transform(cropped/255).unsqueeze(0)).sigmoid() # 生成热图
         debug("init heatmap")
         debug(heatmap.shape)
         debug(heatmap.device)
@@ -122,7 +121,7 @@ class Tester:
         debug(mask.shape)
         debug(mask.device)
         info("box")
-        box = make_box_map(cropped,mask[0])
+        box = make_box_map(cropped,mask)
         debug("init box")
         debug(box.shape)
         debug(box.device)

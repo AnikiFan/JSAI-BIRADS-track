@@ -5,7 +5,7 @@ from typing import *
 def make_mask(heatmap):
     mask = heatmap.squeeze()
     mask = (mask < 0.95) * mask
-    return (mask * 255).to(torch.uint8).unsqueeze(2).repeat(1, 1, 3)
+    return (mask * 255).to(torch.uint8)
 
 def make_box_map(origin, mask):
     TRESH = 30
