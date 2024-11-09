@@ -2,6 +2,53 @@ import cv2
 import numpy as np
 import torch
 from typing import *
+def np_make_mask(heatmap):
+    mask = heatmap.cpu().detach().numpy()
+    mask = mask.squeeze()
+    mask = (mask < 0.95) * mask
+    mask = np.repeat((mask * 255).astype(np.uint8)[:, :, np.newaxis], repeats=3, axis=2)
+    return mask
+
+def np_make_box_map(origin,mask):
+    TRESH = 30
+    _, mask = cv2.threshold(
+        mask, thresh=180, maxval=255, type=cv2.THRESH_BINARY
+    )
+    if mask.max() == 0:
+        return origin
+    array = mask
+    H, W = array.shape
+    left_edges = np.where(array.any(axis=1), array.argmax(axis=1), W + 1)
+    flip_lr = cv2.flip(array, 1)  # 1 horz vert 0
+    right_edges = W - np.where(
+        flip_lr.any(axis=1), flip_lr.argmax(axis=1), W + 1
+    )
+    top_edges = np.where(array.any(axis=0), array.argmax(axis=0), H + 1)
+    flip_ud = cv2.flip(array, 0)  # 1 horz vert 0
+    bottom_edges = H - np.where(
+        flip_ud.any(axis=0), flip_ud.argmax(axis=0), H + 1
+    )
+    leftmost = left_edges.min()
+    rightmost = right_edges.max()
+    topmost = top_edges.min()
+    bottommost = bottom_edges.max()
+    leftmost = leftmost - TRESH
+    if leftmost < 0:
+        leftmost = 0
+    rightmost = rightmost + TRESH
+    if rightmost > W:
+        rightmost = W
+    topmost = topmost - TRESH
+    if topmost < 0:
+        topmost = 0
+    bottommost = bottommost + TRESH
+    if bottommost > H:
+        bottommost = H
+    return origin[topmost:bottommost, leftmost:rightmost]
+
+def np_make_masked(heatmap,origin):
+    return (heatmap.cpu().detach().numpy().squeeze()[:, :, np.newaxis] * origin).astype(np.uint8)
+
 def make_mask(heatmap):
     mask = heatmap.squeeze()
     mask = (mask < 0.95) * mask

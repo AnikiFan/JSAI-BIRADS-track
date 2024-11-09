@@ -2,7 +2,7 @@ from .segmentation.segmentation_model import FCBFormer
 from torchvision import transforms
 import torch.nn.functional as F
 import cv2
-from .utils import removeFrame,make_mask,make_box_map,make_masked
+from .utils import *
 import torch
 import os
 import numpy as np
@@ -20,6 +20,7 @@ class Tester:
         self.seg_model.load_state_dict(torch.load(os.path.join(model_folder_path,'segmentation','FCB_checkpoint.pt'))) # 加载预训练模型
         # 自定义图像转换
         self.transform = transforms.Compose([
+            transforms.ToTensor(),
             transforms.Resize((352,352),antialias=True),
             transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))
         ])
@@ -94,46 +95,23 @@ class Tester:
         info("fea读取图像")
         origin = cv2.imread(image)
         origin = torch.Tensor(origin).to("cuda").permute(2,0,1)
-        debug("init origin")
-        debug(origin.shape)
-        debug(origin.device)
         info("removeFrame")
         top,left,h,w = removeFrame(origin)
-        debug("after remove frame")
-        debug(origin.shape)
-        debug(origin.device)
-        cropped = origin[:,top:top+h,left:left+w]
-        debug("init cropped")
-        debug(cropped.shape)
-        debug(cropped.device)
-        heatmap = self.seg_model(self.transform(cropped).unsqueeze(0)).sigmoid() # 生成热图
-        debug(heatmap.max())
-        debug("init heatmap")
-        debug(heatmap.shape)
-        debug(heatmap.device)
+        origin = origin.permute(1,2,0).cpu().numpy().astype(np.uint8)
+        cropped = origin[top:top+h,left:left+w]
+        heatmap = self.seg_model(self.transform(cropped).unsqueeze(0).to('cuda')).sigmoid() # 生成热图
         info("heatmap插值")
-        heatmap = F.interpolate(heatmap,size=(h,w),mode='bilinear',align_corners=False)
-        debug("after interpolate")
-        debug(heatmap.shape)
-        debug(heatmap.device)
+        heatmap = F.interpolate(heatmap,size=(h,w),mode='bilinear',align_corners=False).cpu()
         info("mask")
-        mask = make_mask(heatmap)
-        debug("init mask")
-        debug(mask.shape)
-        debug(mask.device)
+        mask = np_make_mask(heatmap)
         info("box")
-        box = make_box_map(cropped,mask[0])
-        debug("init box")
-        debug(box.shape)
-        debug(box.device)
+        box = np_make_box_map(cropped,cv2.cvtColor(mask,cv2.COLOR_RGB2GRAY))
         info("masked")
-        masked = make_masked(heatmap,cropped)
-        debug("init masked")
-        debug(masked.shape)
-        debug(masked.device)
-        origin = self.cla_full.predictor.preprocess([origin.permute(1,2,0).cpu().numpy().astype(np.uint8)])
-        box = self.cla_full.predictor.preprocess([box.permute(1,2,0).cpu().numpy().astype(np.uint8)])
-        masked = self.cla_full.predictor.preprocess([masked.permute(1,2,0).cpu().numpy().astype(np.uint8)])
+        masked = np_make_masked(heatmap,cropped)
+
+        origin = self.cla_full.predictor.preprocess([origin])
+        box = self.cla_full.predictor.preprocess([box])
+        masked = self.cla_full.predictor.preprocess([masked])
 
         info("boundary_full")
         boundary_full = self.boundary_full(origin,**YOLO_PARAMS)[0].probs.data
