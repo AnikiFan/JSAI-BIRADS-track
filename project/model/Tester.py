@@ -20,7 +20,7 @@ class Tester:
         self.seg_model.load_state_dict(torch.load(os.path.join(model_folder_path,'segmentation','FCB_checkpoint.pt'))) # 加载预训练模型
         # 自定义图像转换
         self.transform = transforms.Compose([
-            transforms.ToTensor(),
+            # transforms.ToTensor(),
             transforms.Resize((352,352),antialias=True),
             transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))
         ])
@@ -97,9 +97,10 @@ class Tester:
         origin = torch.Tensor(origin).to("cuda").permute(2,0,1)
         info("removeFrame")
         top,left,h,w = removeFrame(origin)
+        cropped = origin[:,top:top+h,left:left+w]
+        heatmap = self.seg_model(self.transform(cropped/255).unsqueeze(0).to('cuda')).sigmoid() # 生成热图
         origin = origin.permute(1,2,0).cpu().numpy().astype(np.uint8)
-        cropped = origin[top:top+h,left:left+w]
-        heatmap = self.seg_model(self.transform(cropped).unsqueeze(0).to('cuda')).sigmoid() # 生成热图
+        cropped = cropped.permute(1,2,0).cpu().numpy().astype(np.uint8)
         info("heatmap插值")
         heatmap = F.interpolate(heatmap,size=(h,w),mode='bilinear',align_corners=False).cpu()
         info("mask")
