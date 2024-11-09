@@ -1,0 +1,6 @@
+path: ../../testB/project/datasets
+train: shape_full/train
+val: shape_full/test
+test: shape_full/test
+
+nc: 2

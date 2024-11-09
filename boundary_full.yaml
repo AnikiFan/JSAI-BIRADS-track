@@ -1,0 +1,6 @@
+path: ../../testB/project/datasets
+train: boundary_full/train
+val: boundary_full/test
+test: boundary_full/test
+
+nc: 2

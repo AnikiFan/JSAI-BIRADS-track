@@ -1,0 +1,6 @@
+path: ../../testB/project/datasets
+train: calcification_masked/train
+val: calcification_masked/test
+test: calcification_masked/test
+
+nc: 2
