@@ -1,0 +1,6 @@
+path: ../../testB/project/datasets
+train: cla_2_3/train
+val: cla_2_3/test
+test: cla_2_3/test
+
+nc: 2

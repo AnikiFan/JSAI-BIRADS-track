@@ -1,0 +1,6 @@
+path: ../../testB/project/datasets
+train: calcification_box/train
+val: calcification_box/test
+test: calcification_box/test
+
+nc: 2

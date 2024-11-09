@@ -2,14 +2,14 @@ import cv2
 import numpy as np
 import torch
 from typing import *
-def make_mask(heatmap):
+def np_make_mask(heatmap):
     mask = heatmap.cpu().detach().numpy()
     mask = mask.squeeze()
     mask = (mask < 0.95) * mask
     mask = np.repeat((mask * 255).astype(np.uint8)[:, :, np.newaxis], repeats=3, axis=2)
     return mask
 
-def make_box_map(origin, mask):
+def np_make_box_map(origin,mask):
     TRESH = 30
     _, mask = cv2.threshold(
         mask, thresh=180, maxval=255, type=cv2.THRESH_BINARY
@@ -46,8 +46,65 @@ def make_box_map(origin, mask):
         bottommost = H
     return origin[topmost:bottommost, leftmost:rightmost]
 
-def make_masked(heatmap,origin):
+def np_make_masked(heatmap,origin):
     return (heatmap.cpu().detach().numpy().squeeze()[:, :, np.newaxis] * origin).astype(np.uint8)
+
+def make_mask(heatmap):
+    mask = heatmap.squeeze()
+    mask = (mask < 0.95) * mask
+    return (mask * 255).to(torch.uint8).unsqueeze(2).repeat(1, 1, 3)
+
+def make_box_map(origin, mask):
+    TRESH = 30
+    mask = (mask > 180).to(torch.uint8) * 255
+    if mask.max() == 0:
+        return origin
+    array = mask
+    H, W = array.shape
+    left_edges = torch.where(array.any(dim=1).bool(), array.argmax(dim=1), torch.tensor(W + 1, device=array.device))
+
+# Flip horizontally (left-right)
+    flip_lr = torch.flip(array, dims=[1])  # dims=[1] means flipping along the horizontal axis
+
+# Calculate right edges
+    right_edges = W - torch.where(
+        flip_lr.any(dim=1).bool(), flip_lr.argmax(dim=1), torch.tensor(W + 1, device=array.device)
+    )
+
+# Calculate top edges
+    top_edges = torch.where(
+        array.any(dim=0).bool(), array.argmax(dim=0), torch.tensor(H + 1, device=array.device)
+    )
+
+# Flip vertically (up-down)
+    flip_ud = torch.flip(array, dims=[0])  # dims=[0] means flipping along the vertical axis
+
+# Calculate bottom edges
+    bottom_edges = H - torch.where(
+        flip_ud.any(dim=0).bool(), flip_ud.argmax(dim=0), torch.tensor(H + 1, device=array.device)
+    )
+
+    leftmost = left_edges.min()
+    rightmost = right_edges.max()
+    topmost = top_edges.min()
+    bottommost = bottom_edges.max()
+    leftmost = leftmost - TRESH
+    if leftmost < 0:
+        leftmost = 0
+    rightmost = rightmost + TRESH
+    if rightmost > W:
+        rightmost = W
+    topmost = topmost - TRESH
+    if topmost < 0:
+        topmost = 0
+    bottommost = bottommost + TRESH
+    if bottommost > H:
+        bottommost = H
+    return origin[:,topmost:bottommost, leftmost:rightmost]
+
+def make_masked(heatmap,origin):
+    heatmap = heatmap.squeeze(0)
+    return (heatmap * origin).to(torch.uint8)
 
 def removeFrame(x: torch.Tensor) -> Tuple[int, int, int, int]:
     """
