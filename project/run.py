@@ -2,10 +2,8 @@ import os
 import pandas as pd
 from model.Tester import Tester
 from glob import glob
-import logging
 from tqdm import tqdm
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
     tqdm.pandas()
 
     # 定义路径
@@ -27,12 +25,13 @@ if __name__ == '__main__':
     # 实例化用于测试的类
     tester = Tester(model_folder_path,format='engine')
 
-    # 对cla数据集进行推理
+    # 对cla数据集进行单张推理
     cla_pre['label'] = cla_pre.img_name.progress_apply(tester.cla_predict)
 
-    # 对fea数据集进行推理
+    # 对fea数据集进行单张推理
     fea_pre[['boundary','calcification','direction','shape']] = fea_pre.img_name.progress_apply(tester.fea_predict).to_list()
 
+    # 将路径转换为图像文件名
     cla_pre.img_name = cla_pre.img_name.str.split(os.sep).str[-1]
     fea_pre.img_name = fea_pre.img_name.str.split(os.sep).str[-1]
 
