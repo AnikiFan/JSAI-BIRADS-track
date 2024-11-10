@@ -8,12 +8,10 @@ import os
 import numpy as np
 from ultralytics import YOLO
 from logging import info
-from line_profiler import profile
 TASK = "classify"
 YOLO_PARAMS = {"imgsz":224,"half":True,"int8":False,"device":"cuda:0","verbose":False}
 class Tester:
     @no_grad()
-    @profile
     def __init__(self,model_folder_path,format='pt',half=True):
         info("init test")
         self.seg_model = load(os.path.join(model_folder_path,'segmentation','FCB_half.torchscript'),map_location="cuda")
@@ -55,7 +53,6 @@ class Tester:
 
 
     @no_grad()
-    @profile
     def cla_predict(self,image):
         origin = imread(image)
         origin = self.cla_full.predictor.preprocess([origin])
@@ -78,7 +75,6 @@ class Tester:
 
 
     @torch.no_grad()
-    @profile
     def fea_predict(self, image):
         image = imread(image)
         x,y,w,h = cv_crop(image)
