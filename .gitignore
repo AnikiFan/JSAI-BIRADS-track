@@ -22,14 +22,10 @@
 runs/
 *_paddle_model/
 *.tar
-*.log
-*.npy
 *.pb
 *.tflite
-*.bin
-*.param
-*.torchscript
 *_saved_model/
 *_ncnn_model/
-*.cache
 *.DS_Store
+*.csv
+linux/
