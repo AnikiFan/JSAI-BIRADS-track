@@ -1,6 +1,6 @@
 path: ../../testB/project/datasets
-train: cla_4A_4B4C5/train
-val: cla_4A_4B4C5/test
-test: cla_4A_4B4C5/test
+train: cla_full/train
+val: cla_full/test
+test: cla_full/test
 
 nc: 2
