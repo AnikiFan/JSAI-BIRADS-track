@@ -22,7 +22,7 @@ if __name__ == '__main__':
     fea_files.sort(key=lambda x: int(os.path.basename(x).split('.')[0])) # 按照字典序将文件名排序
     fea_pre = pd.DataFrame({"img_name":fea_files})
 
-    # 实例化用于测试的类
+    # 实例化用于测试的类，format为engine则使用tensorrt参数文件，如果为torchscript则使用torchscript参数文件
     tester = Tester(model_folder_path,format='engine')
 
     # 对cla数据集进行单张推理

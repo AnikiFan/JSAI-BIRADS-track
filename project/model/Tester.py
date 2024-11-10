@@ -11,7 +11,7 @@ TASK = "classify" # 分类任务
 YOLO_PARAMS = {"imgsz":224,"half":True,"int8":False,"device":"cuda:0","verbose":False} # 采用半精度模型，调用GPU推理
 class Tester:
     @no_grad()
-    def __init__(self,model_folder_path,format='pt',half=True):
+    def __init__(self,model_folder_path,format='engine',half=True):
         self.seg_model = load(os.path.join(model_folder_path,'segmentation','FCB_half.torchscript'),map_location="cuda") # 加载分割模型
         # 自定义图像转换
         self.transform = transforms.Compose([
@@ -23,7 +23,11 @@ class Tester:
 
 
         # 实例化cla所需模型
-        self.cla_full = YOLO(os.path.join(model_folder_path,'cla','full.'+format),task=TASK)
+        try:
+            self.cla_full = YOLO(os.path.join(model_folder_path,'cla','full.'+format),task=TASK)
+        except Exception as e:
+            format = 'torchscript'
+            self.cla_full = YOLO(os.path.join(model_folder_path,'cla','full.'+format),task=TASK)           
         self.cla_full(**YOLO_PARAMS)
         self.cla_0_1 = YOLO(os.path.join(model_folder_path,'cla','full_2_3.'+format),task=TASK)
         self.cla_01_2345 = YOLO(os.path.join(model_folder_path,'cla','full_23_4A4B4C5.'+format),task=TASK)
@@ -78,9 +82,12 @@ class Tester:
     @torch.no_grad()
     def fea_predict(self, image):
         image = imread(image) # 读取图像
-        x,y,w,h = cv_crop(image) # 裁剪
         origin = tensor(image,device='cuda').permute(2,0,1) # 转为tensor
-        cropped = origin[:,y:y+h,x:x+w] # 裁剪
+        try:
+            x,y,w,h = cv_crop(image) # 裁剪
+            cropped = origin[:,y:y+h,x:x+w] # 裁剪
+        except Exception as e:
+            cropped = origin
         heatmap = self.seg_model(self.transform(cropped/255).half().unsqueeze(0)).sigmoid() # 生成热图
         heatmap = interpolate(heatmap,size=(h,w),mode='bilinear',align_corners=False) # 差值，调整为crop后的图片大小
         mask = make_mask(heatmap) # 制作mask
