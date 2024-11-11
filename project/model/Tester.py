@@ -18,8 +18,8 @@ from collections import defaultdict
 def get_device():
     if torch.cuda.is_available():
         return torch.device('cuda')
-    # elif torch.backends.mps.is_available():
-    #     return torch.device('mps')
+    elif torch.backends.mps.is_available():
+        return torch.device('mps')
     else:
         return torch.device('cpu')
 
@@ -46,9 +46,8 @@ class Tester:
         self.cla_2_345 = YOLO(os.path.join(model_folder_path,'cla','full_4A_4B4C5_t.pt'))
         self.cla_3_45 = YOLO(os.path.join(model_folder_path,'cla','full_4B_4C5_t.pt'))
         self.cla_4_5 = YOLO(os.path.join(model_folder_path,'cla','full_4C_5_t.pt'))
-        # self.fea2cla_01_2345 = fea2cla_model.load_model(os.path.join(model_folder_path,'cla','fea2cla_01_2345_best.pkl'))  # 使用了testA和train
-        self.fea2cla_01_2345 = fea2cla_model.load_model(os.path.join(model_folder_path,'cla','fea2cla_01_2345_train_only.pkl'))  # 只使用了train
-
+        self.fea2cla_01_2345 = fea2cla_model.load_model(os.path.join(model_folder_path,'cla','fea2cla_01_2345_best.pkl'))  # 使用了testA和train
+        # self.fea2cla_01_2345 = fea2cla_model.load_model(os.path.join(model_folder_path,'cla','fea2cla_01_2345_train_only.pkl'))  # 只使用了train
         self.fea2cla_012_345 = fea2cla_model.load_model(os.path.join(model_folder_path,'cla','fea2cla_012_345_best.pkl'))
         self.fea2cla_0123_45 = fea2cla_model.load_model(os.path.join(model_folder_path,'cla','fea2cla_0123_45_best.pkl'))
         
@@ -205,6 +204,7 @@ class Tester:
 
         # ground_truth = self.get_ground_truth(image)
         result = self.majority_ensemble([P_basic_updated,torch.tensor(P_bayes)])
+        # result = torch.argmax(P_basic_updated).item()
         return result
     
     @staticmethod
