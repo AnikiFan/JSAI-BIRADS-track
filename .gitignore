@@ -10,3 +10,15 @@
 __pycache__/
 *.lprof
 *.txt
+.history/
+Tester copy.py
+cla_pre_basic_bayes_fea2cla_1.csv
+cla_pre_bayes_fea2cla_1
+fea_pre_fea_probs.csv
+fea_pre_probs.csv
+prediction_results_false.csv
+prediction_results.csv
+cla_pre_bayes_fea2cla_1.csv
+cla_pre_fea_probs.csv
+cla_pre2.csv
+test.py
