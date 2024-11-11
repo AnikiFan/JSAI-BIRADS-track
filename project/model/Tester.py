@@ -96,6 +96,21 @@ class Tester:
         '''--------------------------------- fea2cla ---------------------------------'''
         data = self.get_basic_features(origin)
         P_fea2cla_01_2345 = self.fea2cla_01_2345.predict(data,return_prob=True)[0] # ! 注意，只用到了这一个，后面注释了
+        # 利用P_fea2cla_01_2345更新P_basic
+
+        if P_fea2cla_01_2345[0] > 0.80:  # 如果特征模型强烈倾向于前两类(0,1)
+            # 增强P_basic中前两类的概率
+            P_basic[0:2] = P_basic[0:2] * 1.2
+            # 降低后四类的概率
+            P_basic[2:6] = P_basic[2:6] * 0.8
+        elif P_fea2cla_01_2345[1] > 0.80:  # 如果特征模型强烈倾向于后四类(2,3,4,5)
+            # 降低前两类的概率
+            P_basic[0:2] = P_basic[0:2] * 0.8
+            # 增强后四类的概率
+            P_basic[2:6] = P_basic[2:6] * 1.2
+        # 重新归一化P_basic_updated_2
+        # P_basic_updated_2 = F.softmax(P_basic_updated_2, dim=0) # 效果变得很糟糕
+        P_basic = P_basic / torch.sum(P_basic)
         '''--------------------------------- bayes ---------------------------------'''
         P_bayes = torch.zeros(6).cuda()
 
@@ -140,24 +155,10 @@ class Tester:
             P_bayes[1] = P_bayes[1]*p_1
             
         '''--------------------------------- ensemble ---------------------------------'''
-        # 利用P_fea2cla_01_2345更新P_basic
 
-        if P_fea2cla_01_2345[0] > 0.80:  # 如果特征模型强烈倾向于前两类(0,1)
-            # 增强P_basic中前两类的概率
-            P_basic[0:2] = P_basic[0:2] * 1.2
-            # 降低后四类的概率
-            P_basic[2:6] = P_basic[2:6] * 0.8
-        elif P_fea2cla_01_2345[1] > 0.80:  # 如果特征模型强烈倾向于后四类(2,3,4,5)
-            # 降低前两类的概率
-            P_basic[0:2] = P_basic[0:2] * 0.8
-            # 增强后四类的概率
-            P_basic[2:6] = P_basic[2:6] * 1.2
-        # 重新归一化P_basic_updated_2
-        # P_basic_updated_2 = F.softmax(P_basic_updated_2, dim=0) # 效果变得很糟糕
-        P_basic = P_basic / torch.sum(P_basic)
 
         # ground_truth = self.get_ground_truth(image)
-        result = self.majority_ensemble([P_basic,torch.tensor(P_bayes)])
+        result = self.majority_ensemble([P_basic,P_bayes])
         # result = torch.argmax(P_basic_updated).item()
         return result
     
