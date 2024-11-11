@@ -26,10 +26,5 @@ launch.json
 cla_pre.csv
 fea_pre.csv
 project/run.py
-project/cla_pre.csv
-project/fea_pre.csv
-project/cla_pre.csv
-project/fea_pre.csv
 project/demo.py
-!project/model/cla/full_final.pt
 project/model/cla/full_final.pt
