@@ -32,13 +32,13 @@ if __name__ == '__main__':
     tester = Tester(model_folder_path)
 
     # 对cla数据集进行推理
-    cla_pre['label'] = cla_files.img.progress_apply(tester.cla_predict)
+    cla_pre['label'] = cla_files.img.progress_apply(tester.cla_predict2)
 
     # 对fea数据集进行推理
-    fea_pre[['boundary','calcification','direction','shape']] = fea_files.img.progress_apply(tester.fea_predict).to_list()
+    # fea_pre[['boundary','calcification','direction','shape']] = fea_files.img.progress_apply(tester.fea_predict).to_list()
 
     # 导出pre csv文件
     cla_pre.to_csv("cla_pre.csv",index=False)
-    fea_pre.to_csv("fea_pre.csv",index=False)
+    # fea_pre.to_csv("fea_pre.csv",index=False)
 
 
