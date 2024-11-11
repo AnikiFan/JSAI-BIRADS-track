@@ -2,6 +2,15 @@ import cv2
 import numpy as np
 import torch
 from typing import *
+
+def get_device():
+    if torch.cuda.is_available():
+        return torch.device('cuda')
+    elif torch.backends.mps.is_available():
+        return torch.device('mps')
+    else:
+        return torch.device('cpu')
+
 def make_mask(heatmap):
     mask = heatmap.cpu().detach().numpy()
     mask = mask.squeeze()
@@ -62,7 +71,7 @@ def removeFrame(x: torch.Tensor) -> Tuple[int, int, int, int]:
     c, h, w = x.shape
     assert c == 3 or c == 1,"input shape should be (c,h,w)!"
     if not isinstance(x,torch.Tensor):
-        x = torch.Tensor(x).to('cuda')
+        x = torch.Tensor(x).to(get_device())
     
     row_tolerance = h * 0.05
     col_tolerance = w * 0.05
