@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from typing import *
 from torchvision import transforms
+from joblib import load
 def make_mask(heatmap):
     mask = heatmap.squeeze()
     mask = (mask < 0.95) * mask # 将高于阈值的置为0

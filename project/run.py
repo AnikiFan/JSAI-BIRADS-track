@@ -38,3 +38,4 @@ if __name__ == '__main__':
     # 导出pre csv文件
     cla_pre.to_csv("cla_pre.csv",index=False)
     fea_pre.to_csv("fea_pre.csv",index=False)
+
