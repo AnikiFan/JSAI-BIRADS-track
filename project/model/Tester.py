@@ -1,32 +1,17 @@
-from torchvision import transforms
-from torch.nn.functional import interpolate
 from cv2 import imread
 from .utils import *
-from torch import  no_grad,Tensor,argmax,mean,max,stack,sum,tensor
-from torch.jit import load
+import torch
 import os
 import numpy as np
 from ultralytics import YOLO
-from logging import info
 from line_profiler import profile
-from .cla.model import fea2cla_model
-from collections import defaultdict
 import pandas as pd
 TASK = "classify" # 分类任务
 YOLO_PARAMS = {"imgsz":224,"half":True,"int8":False,"device":"cuda:0","verbose":False} # 采用半精度模型，调用GPU推理
 class Tester:
-    @no_grad()
+    @torch.no_grad()
     @profile
     def __init__(self,model_folder_path,format='engine',half=True):
-        self.seg_model = load(os.path.join(model_folder_path,'segmentation','FCB_half.torchscript'),map_location="cuda") # 加载分割模型
-        # 自定义图像转换
-        self.transform = transforms.Compose([
-            transforms.Resize((352,352),antialias=True),
-            transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))
-        ])
-        self.seg_model.eval()
-        self.preprocess = Preprocess(half) # 自定义用于YOLO模型的图像预处理
-
         # 实例化cla所需模型
         try:
             self.cla_full = YOLO(os.path.join(model_folder_path,'cla','full.'+format),task=TASK)
@@ -57,6 +42,7 @@ class Tester:
     @torch.no_grad()
     @profile
     def fea_predict_probs(self,image):
+        # 在cla数据集上用fea模型推理
         boundary_full_result = self.boundary_full(image,**YOLO_PARAMS)[0].probs.data[1]
         direction_full_result = self.direction_full(image,**YOLO_PARAMS)[0].probs.data[1]
         calcification_full_result = self.calcification_full(image,**YOLO_PARAMS)[0].probs.data[1]
@@ -68,11 +54,11 @@ class Tester:
         # 边缘不光整 boundary 0 光整，1 不光整
         # 微钙化 calcification 0 有，1 无
         # 但是都当1才会有好的效果
-        return tensor([boundary_full_result,calcification_full_result,direction_full_result,shape_full_result],device='cpu')
+        return torch.tensor([boundary_full_result,calcification_full_result,direction_full_result,shape_full_result],device='cpu')
         
 
     def get_basic_features(self,image):
-        # data = pd.DataFrame(columns=["boundary_pre_probs","calcification_pre_probs","direction_pre_probs","shape_pre_probs"])
+        # 构造输入数据
         data = self.fea_predict_probs(image)
         data = pd.DataFrame([data],columns=["boundary_pre_probs","calcification_pre_probs","direction_pre_probs","shape_pre_probs"])
         data["fea_probs_sum"] = data.sum(axis=1)
@@ -94,23 +80,24 @@ class Tester:
         P_fea2cla_01_2345 = self.fea2cla_01_2345.predict(data,return_prob=True)[0] # ! 注意，只用到了这一个，后面注释了
         # 利用P_fea2cla_01_2345更新P_basic
 
+        P_basic_copy = P_basic.clone()
+
         if P_fea2cla_01_2345[0] > 0.80:  # 如果特征模型强烈倾向于前两类(0,1)
             # 增强P_basic中前两类的概率
-            P_basic[0:2] = P_basic[0:2] * 1.2
+            P_basic_copy[0:2] = P_basic_copy[0:2] * 1.2
             # 降低后四类的概率
-            P_basic[2:6] = P_basic[2:6] * 0.8
+            P_basic_copy[2:6] = P_basic_copy[2:6] * 0.8
         elif P_fea2cla_01_2345[1] > 0.80:  # 如果特征模型强烈倾向于后四类(2,3,4,5)
             # 降低前两类的概率
-            P_basic[0:2] = P_basic[0:2] * 0.8
+            P_basic_copy[0:2] = P_basic_copy[0:2] * 0.8
             # 增强后四类的概率
-            P_basic[2:6] = P_basic[2:6] * 1.2
+            P_basic_copy[2:6] = P_basic_copy[2:6] * 1.2
         # 重新归一化P_basic_updated_2
         # P_basic_updated_2 = F.softmax(P_basic_updated_2, dim=0) # 效果变得很糟糕
         P_basic = P_basic / torch.sum(P_basic)
-        '''--------------------------------- bayes ---------------------------------'''
-        P_bayes = torch.zeros(6).cuda()
 
         
+        P_bayes = torch.zeros(6).cuda()
         # ----------------------------- layer 1 区分 01|2345 -----------------------------
         p_01,p_2345 = self.cla_01_2345(origin,**YOLO_PARAMS)[0].probs.data
         P_bayes[0:2] = p_01
@@ -150,12 +137,7 @@ class Tester:
             P_bayes[0] = P_bayes[0]*p_0
             P_bayes[1] = P_bayes[1]*p_1
             
-        '''--------------------------------- ensemble ---------------------------------'''
-
-
-        # ground_truth = self.get_ground_truth(image)
         result = self.majority_ensemble([P_basic,P_bayes])
-        # result = torch.argmax(P_basic_updated).item()
         return result
     
     @torch.no_grad()
